@@ -1,29 +1,19 @@
-void setup() {
-  // put your setup code here, to run once:
+int freq(){
   unsigned int t;
-  //DDRA = 0xFF;  
-  DDRB = 0xFF;         //Data 
-  PORTD = 0xFF; 
-  TCCR1A = 0;
-  TIFR1|= (1<<ICF1);   /* clear input capture flag */
-  TCCR1B = 0x41;      /* capture on rising edge */ 
-
-  while ((TIFR1&(1<<ICF1)) == 0);  /* monitor for capture*/
-  t = ICR1;     
-  TIFR1 |= (1<<ICF1);   /* clear capture flag */
-
-  while ((TIFR1&(1<<ICF1)) == 0);  /* monitor for next rising
-          edge capture */
-
-  t = ICR1 - t;       /* period= recent capture-
-          previous capture */
-  PORTA = t;        /* put period count on PORTA & PORTB */ 
-  PORTB = t>>8; 
-
-  while (1);
-}
-
-void loop() {
-  // put your main code here, to run repeatedly:
-
+  TIFR1 |= (1<<ICF1);
+  TCNT1 =0;                              //reset timer 1
+  while((TIFR1&(1<<ICF1)) == 0); //monitor rising edge
+  t=ICR1;
+  //Serial.println("detected");
+  TIFR1 |= (1<<ICF1);
+  while((TIFR1&(1<<ICF1)) == 0); //wait for the next rising edge
+  //Serial.println("detected2");
+  Serial.println(TIFR1&(TOV1));
+  if (TOV1==1){     //check overflow flag
+   TIFR1 |= (1<<TOV1);
+   return 0;
+  }
+  else{
+   return F_CPU/(ICR1 - t);
+  }
 }
